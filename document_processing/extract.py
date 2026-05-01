@@ -17,14 +17,16 @@ class Document:
     metadata: dict = field(default_factory=dict)
 
 
-def write_markedown_doc(doc: Document, output_dir: Path) -> Path:
+def write_markdown_doc(doc: Document, output_dir: Path) -> Path:
     post = frontmatter.Post(
             doc.text,
             source=doc.source.name,
             title=doc.metadata["title"],
             authors=doc.metadata["authors"],
     )
-    (output_dir / f"{doc.source.stem}.md").write_text(frontmatter.dumps(post), encoding="utf-8")
+    out = output_dir / f"{doc.source.stem}.md"
+    out.write_text(frontmatter.dumps(post), encoding="utf-8")
+    return out
 
 
 def extract_text(file_path: Path | str) -> Document:
@@ -55,7 +57,7 @@ def extract_docs(input_dir: Path | str, output_dir: Path | str) -> list[Document
         doc = extract_text(file_path=path)
 
         # Write the document as a markdown file with frontmatter
-        write_markedown_doc(doc, output_dir)
+        write_markdown_doc(doc=doc, output_dir=output_dir)
 
         docs.append(doc)
     return docs
