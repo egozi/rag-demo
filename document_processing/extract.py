@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import frontmatter
-import pymupdf
-import pymupdf4llm
+
+from .pdf_proc import extract_pdf_basic
 
 PDF_SUFFIXES = {".pdf"}
 TEXT_SUFFIXES = {".md", ".markdown", ".txt"}
@@ -17,36 +17,29 @@ class Document:
     metadata: dict = field(default_factory=dict)
 
 
-def extract_doc(path: Path | str) -> Document:
-    path = Path(path)
+def write_markedown_doc(doc: Document, output_dir: Path) -> Path:
+    post = frontmatter.Post(
+            doc.text,
+            source=doc.source.name,
+            title=doc.metadata["title"],
+            authors=doc.metadata["authors"],
+    )
+    (output_dir / f"{doc.source.stem}.md").write_text(frontmatter.dumps(post), encoding="utf-8")
+
+
+def extract_text(file_path: Path | str) -> Document:
+    path = Path(file_path)
     suffix = path.suffix.lower()
 
-    title: str | None = None
-    authors: list[str] = []
-
     if suffix in PDF_SUFFIXES:
-        text = pymupdf4llm.to_markdown(str(path))
-        pdf = pymupdf.open(str(path))
-        meta = pdf.metadata or {}
-        pdf.close()
-        raw_title = (meta.get("title") or "").strip()
-        if raw_title and raw_title != path.stem and not raw_title.lower().startswith("microsoft word - "):
-            title = raw_title
-        raw_author = (meta.get("author") or "").strip()
-        if ";" in raw_author:
-            authors = [a.strip() for a in raw_author.split(";") if a.strip()]
-        elif raw_author:
-            authors = [a.strip() for a in raw_author.split(",") if a.strip()]
+        text, metadata = extract_pdf_basic(path)
     elif suffix in TEXT_SUFFIXES:
         text = path.read_text(encoding="utf-8")
+        metadata = {"title": None, "authors": []}
     else:
         raise ValueError(f"Unsupported file type: {path.suffix} ({path.name})")
 
-    return Document(
-        source=path,
-        text=text,
-        metadata={"title": title, "authors": authors},
-    )
+    return Document(source=path, text=text, metadata=metadata)
 
 
 def extract_docs(input_dir: Path | str, output_dir: Path | str) -> list[Document]:
@@ -58,13 +51,11 @@ def extract_docs(input_dir: Path | str, output_dir: Path | str) -> list[Document
     for path in sorted(input_dir.iterdir()):
         if not path.is_file() or path.suffix.lower() not in SUPPORTED_SUFFIXES:
             continue
-        doc = extract_doc(path)
-        post = frontmatter.Post(
-            doc.text,
-            source=doc.source.name,
-            title=doc.metadata["title"],
-            authors=doc.metadata["authors"],
-        )
-        (output_dir / f"{path.stem}.md").write_text(frontmatter.dumps(post), encoding="utf-8")
+        # Extract the document text and metadata
+        doc = extract_text(file_path=path)
+
+        # Write the document as a markdown file with frontmatter
+        write_markedown_doc(doc, output_dir)
+
         docs.append(doc)
     return docs
