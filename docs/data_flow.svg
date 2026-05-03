@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 480" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="620" y="32" text-anchor="middle" font-size="20" font-weight="700" fill="#222">RAG Demo &#8212; Data Flow</text>
+
+  <!-- ───────── INDEXING ───────── -->
+  <text x="20" y="78" font-size="13" font-weight="700" fill="#2b5d8a" letter-spacing="0.5">INDEXING (offline, once per corpus)</text>
+
+  <!-- Data Ingestion -->
+  <rect x="20"  y="100" width="200" height="80" rx="10" fill="#cfe2f3" stroke="#1f3d5c" stroke-width="1.5"/>
+  <text x="120" y="135" text-anchor="middle" font-size="14" font-weight="700">Data Ingestion</text>
+  <text x="120" y="155" text-anchor="middle" font-size="11" fill="#444">PDF / MD / TXT &#8594; Markdown</text>
+
+  <!-- arrow -->
+  <line x1="220" y1="140" x2="262" y2="140" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Chunker -->
+  <rect x="262" y="100" width="200" height="80" rx="10" fill="#cfe2f3" stroke="#1f3d5c" stroke-width="1.5"/>
+  <text x="362" y="135" text-anchor="middle" font-size="14" font-weight="700">Chunker</text>
+  <text x="362" y="155" text-anchor="middle" font-size="11" fill="#444">Markdown &#8594; JSONL chunks</text>
+
+  <line x1="462" y1="140" x2="504" y2="140" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Embedder (indexing) -->
+  <rect x="504" y="100" width="200" height="80" rx="10" fill="#cfe2f3" stroke="#1f3d5c" stroke-width="1.5"/>
+  <text x="604" y="135" text-anchor="middle" font-size="14" font-weight="700">Embedder</text>
+  <text x="604" y="155" text-anchor="middle" font-size="11" fill="#444">text &#8594; vectors</text>
+
+  <line x1="704" y1="140" x2="746" y2="140" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Vector DB -->
+  <rect x="746" y="100" width="220" height="80" rx="10" fill="#fff2cc" stroke="#7a6a1f" stroke-width="1.5"/>
+  <text x="856" y="135" text-anchor="middle" font-size="14" font-weight="700">Vector Database</text>
+  <text x="856" y="155" text-anchor="middle" font-size="11" fill="#444">data_store (parquet)</text>
+
+  <!-- ───────── QUERY ───────── -->
+  <text x="20" y="278" font-size="13" font-weight="700" fill="#3a7a3a" letter-spacing="0.5">QUERY (per user question)</text>
+
+  <!-- User Query -->
+  <rect x="20"  y="300" width="140" height="80" rx="10" fill="#f4cccc" stroke="#7a1f1f" stroke-width="1.5"/>
+  <text x="90"  y="345" text-anchor="middle" font-size="14" font-weight="700">User Query</text>
+
+  <line x1="160" y1="340" x2="202" y2="340" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Embedder (query) -->
+  <rect x="202" y="300" width="160" height="80" rx="10" fill="#d9ead3" stroke="#2f5f2f" stroke-width="1.5"/>
+  <text x="282" y="335" text-anchor="middle" font-size="14" font-weight="700">Embedder</text>
+  <text x="282" y="355" text-anchor="middle" font-size="11" fill="#444">query &#8594; vector</text>
+
+  <line x1="362" y1="340" x2="404" y2="340" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Retrieval -->
+  <rect x="404" y="300" width="160" height="80" rx="10" fill="#d9ead3" stroke="#2f5f2f" stroke-width="1.5"/>
+  <text x="484" y="335" text-anchor="middle" font-size="14" font-weight="700">Retrieval</text>
+  <text x="484" y="355" text-anchor="middle" font-size="11" fill="#444">top-k by cosine</text>
+
+  <line x1="564" y1="340" x2="606" y2="340" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Prompt Construction -->
+  <rect x="606" y="300" width="180" height="80" rx="10" fill="#d9ead3" stroke="#2f5f2f" stroke-width="1.5"/>
+  <text x="696" y="335" text-anchor="middle" font-size="14" font-weight="700">Prompt Construction</text>
+  <text x="696" y="355" text-anchor="middle" font-size="11" fill="#444">query + chunks &#8594; prompt</text>
+
+  <line x1="786" y1="340" x2="828" y2="340" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Answerer -->
+  <rect x="828" y="300" width="180" height="80" rx="10" fill="#d9ead3" stroke="#2f5f2f" stroke-width="1.5"/>
+  <text x="918" y="335" text-anchor="middle" font-size="14" font-weight="700">Answerer</text>
+  <text x="918" y="355" text-anchor="middle" font-size="11" fill="#444">LLM (OpenAI)</text>
+
+  <line x1="1008" y1="340" x2="1050" y2="340" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Cited Answer -->
+  <rect x="1050" y="300" width="170" height="80" rx="10" fill="#f4cccc" stroke="#7a1f1f" stroke-width="1.5"/>
+  <text x="1135" y="345" text-anchor="middle" font-size="14" font-weight="700">Cited Answer</text>
+
+  <!-- Cross-pipeline: Vector DB &#8594; Retrieval -->
+  <path d="M 856 180 C 856 240, 484 240, 484 300" stroke="#7a6a1f" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <text x="670" y="245" text-anchor="middle" font-size="12" font-style="italic" fill="#7a6a1f">data_store.load()</text>
+
+  <!-- Legend -->
+  <g transform="translate(20, 420)">
+    <rect x="0"   y="0" width="14" height="14" fill="#cfe2f3" stroke="#1f3d5c" stroke-width="1"/>
+    <text x="20"  y="11" font-size="11" fill="#222">indexing module</text>
+    <rect x="160" y="0" width="14" height="14" fill="#d9ead3" stroke="#2f5f2f" stroke-width="1"/>
+    <text x="180" y="11" font-size="11" fill="#222">query-time module</text>
+    <rect x="320" y="0" width="14" height="14" fill="#fff2cc" stroke="#7a6a1f" stroke-width="1"/>
+    <text x="340" y="11" font-size="11" fill="#222">shared store</text>
+    <rect x="450" y="0" width="14" height="14" fill="#f4cccc" stroke="#7a1f1f" stroke-width="1"/>
+    <text x="470" y="11" font-size="11" fill="#222">external input/output</text>
+  </g>
+</svg>
