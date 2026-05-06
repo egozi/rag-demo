@@ -27,6 +27,16 @@ jupyter notebook notebooks/01_demo.ipynb
 
 Drop a PDF (or `.md` / `.txt`) into `data/raw/` before running the notebook. For the OpenAI-backed embedder and answerer, create a `.env` at the repo root with `OPENAI_API_KEY=sk-...` (gitignored).
 
+## Eval
+
+A small ground-truth dataset lives at `eval/questions.json` (10 questions over the demo PDF — multi-choice and one-word, each with a verbatim excerpt for validation). Run the suite after the indexing pipeline has populated `data/embeddings/`:
+
+```bash
+python eval/run_eval.py
+```
+
+Reports two scores: **retrieval accuracy** (does any top-k chunk contain the ground-truth excerpt?) and **answer accuracy** (does the LLM's response contain the expected answer string?), broken down per question type.
+
 ## Swappable backends
 
 - **Embedder:** `LocalEmbedder` (`sentence-transformers/all-MiniLM-L6-v2`, no API key) or `ApiEmbedder` (OpenAI `text-embedding-3-small`).

@@ -1,0 +1,107 @@
+[
+  {
+    "id": "mc-001",
+    "type": "multi_choice",
+    "question": "Which LLM does the paper use as a Scrum Master in the proposed approach?",
+    "options": ["GPT-3.5", "GPT-4", "BERT", "Llama-2"],
+    "answer": "GPT-3.5",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "The main reason why GPT-3.5 was the used LLM is because it is one of the most widely used LLM"
+    }
+  },
+  {
+    "id": "mc-002",
+    "type": "multi_choice",
+    "question": "How many student groups were used to evaluate the proposed procedure?",
+    "options": ["3", "5", "6", "8"],
+    "answer": "6",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "In total, six groups of students were used to evaluate this procedure."
+    }
+  },
+  {
+    "id": "mc-003",
+    "type": "multi_choice",
+    "question": "How long are the daily standup meetings described in the paper?",
+    "options": ["10 minutes", "15 minutes", "20 minutes", "30 minutes"],
+    "answer": "15 minutes",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "They are usually 15-minute-long meetings where each member of the development team meets with the scrum master"
+    }
+  },
+  {
+    "id": "mc-004",
+    "type": "multi_choice",
+    "question": "For which obstacle category did GPT provide zero successful solutions?",
+    "options": ["Logical errors", "Compatibility issues", "Need of new/different hardware", "Integration between front-end and back-end"],
+    "answer": "Need of new/different hardware",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "These two were contradictory or incorrect requirements and when the new hardware was required. A total of 40 obstacles were reported and GPT was incapable of fixing any of them."
+    }
+  },
+  {
+    "id": "mc-005",
+    "type": "multi_choice",
+    "question": "What is the institutional affiliation of the paper's authors?",
+    "options": ["MIT", "Stanford University", "Embry-Riddle Aeronautical University", "Carnegie Mellon University"],
+    "answer": "Embry-Riddle Aeronautical University",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "J. Ortiz Couder, O. Ochoa\nEmbry-Riddle Aeronautical University (UNITED STATES)"
+    }
+  },
+  {
+    "id": "ow-001",
+    "type": "one_word",
+    "question": "What percentage of the total reported obstacles did GPT solve successfully?",
+    "answer": "52.5%",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "GPT gave a successful solution to 52.5% of the total reported obstacles."
+    }
+  },
+  {
+    "id": "ow-002",
+    "type": "one_word",
+    "question": "How many total obstacles were reported across all groups?",
+    "answer": "158",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "In total, 158 obstacles were reported, and GPT gave a solution to 114 of them."
+    }
+  },
+  {
+    "id": "ow-003",
+    "type": "one_word",
+    "question": "At which conference was this paper presented?",
+    "answer": "EDULEARN24",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "Proceedings of EDULEARN24 Conference\n1st-3rd July 2024, Palma, Mallorca, Spain"
+    }
+  },
+  {
+    "id": "ow-004",
+    "type": "one_word",
+    "question": "How many primary roles does the paper describe within the Scrum framework?",
+    "answer": "three",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "There are three primary roles within the Scrum framework; Scrum Master, servant-leaders responsible for ensuring that the Scrum process is followed properly, Product Owner, person who represents the stakeholders and is responsible for maximizing the value of the product by managing the Product Backlog, and, Development Team"
+    }
+  },
+  {
+    "id": "ow-005",
+    "type": "one_word",
+    "question": "In which city was the EDULEARN24 conference held?",
+    "answer": "Palma",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "1st-3rd July 2024, Palma, Mallorca, Spain"
+    }
+  }
+]
