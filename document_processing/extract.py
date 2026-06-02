@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
-
-import frontmatter
 
 from .pdf_proc import extract_pdf_basic
 
@@ -17,15 +16,27 @@ class Document:
     metadata: dict = field(default_factory=dict)
 
 
+def _frontmatter_value(value: object) -> str:
+    """Return a YAML-safe scalar/list using JSON syntax, which YAML accepts."""
+    if value is None:
+        return "null"
+    return json.dumps(value, ensure_ascii=False)
+
+
 def write_markdown_doc(doc: Document, output_dir: Path) -> Path:
-    post = frontmatter.Post(
-            doc.text,
-            source=doc.source.name,
-            title=doc.metadata["title"],
-            authors=doc.metadata["authors"],
+    frontmatter = {
+        "source": doc.source.name,
+        "title": doc.metadata.get("title"),
+        "authors": doc.metadata.get("authors", []),
+    }
+    header = "\n".join(
+        f"{key}: {_frontmatter_value(value)}"
+        for key, value in frontmatter.items()
     )
+    content = f"---\n{header}\n---\n\n{doc.text}"
+
     out = output_dir / f"{doc.source.stem}.md"
-    out.write_text(frontmatter.dumps(post), encoding="utf-8")
+    out.write_text(content, encoding="utf-8")
     return out
 
 

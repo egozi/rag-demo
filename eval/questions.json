@@ -3,7 +3,12 @@
     "id": "mc-001",
     "type": "multi_choice",
     "question": "Which LLM does the paper use as a Scrum Master in the proposed approach?",
-    "options": ["GPT-3.5", "GPT-4", "BERT", "Llama-2"],
+    "options": [
+      "GPT-3.5",
+      "GPT-4",
+      "BERT",
+      "Llama-2"
+    ],
     "answer": "GPT-3.5",
     "answer_location": {
       "source": "Large Language Models the New Scrum Masters.pdf",
@@ -14,7 +19,12 @@
     "id": "mc-002",
     "type": "multi_choice",
     "question": "How many student groups were used to evaluate the proposed procedure?",
-    "options": ["3", "5", "6", "8"],
+    "options": [
+      "3",
+      "5",
+      "6",
+      "8"
+    ],
     "answer": "6",
     "answer_location": {
       "source": "Large Language Models the New Scrum Masters.pdf",
@@ -25,7 +35,12 @@
     "id": "mc-003",
     "type": "multi_choice",
     "question": "How long are the daily standup meetings described in the paper?",
-    "options": ["10 minutes", "15 minutes", "20 minutes", "30 minutes"],
+    "options": [
+      "10 minutes",
+      "15 minutes",
+      "20 minutes",
+      "30 minutes"
+    ],
     "answer": "15 minutes",
     "answer_location": {
       "source": "Large Language Models the New Scrum Masters.pdf",
@@ -36,7 +51,12 @@
     "id": "mc-004",
     "type": "multi_choice",
     "question": "For which obstacle category did GPT provide zero successful solutions?",
-    "options": ["Logical errors", "Compatibility issues", "Need of new/different hardware", "Integration between front-end and back-end"],
+    "options": [
+      "Logical errors",
+      "Compatibility issues",
+      "Need of new/different hardware",
+      "Integration between front-end and back-end"
+    ],
     "answer": "Need of new/different hardware",
     "answer_location": {
       "source": "Large Language Models the New Scrum Masters.pdf",
@@ -47,7 +67,12 @@
     "id": "mc-005",
     "type": "multi_choice",
     "question": "What is the institutional affiliation of the paper's authors?",
-    "options": ["MIT", "Stanford University", "Embry-Riddle Aeronautical University", "Carnegie Mellon University"],
+    "options": [
+      "MIT",
+      "Stanford University",
+      "Embry-Riddle Aeronautical University",
+      "Carnegie Mellon University"
+    ],
     "answer": "Embry-Riddle Aeronautical University",
     "answer_location": {
       "source": "Large Language Models the New Scrum Masters.pdf",
@@ -103,5 +128,108 @@
       "source": "Large Language Models the New Scrum Masters.pdf",
       "excerpt": "1st-3rd July 2024, Palma, Mallorca, Spain"
     }
+  },
+  {
+    "id": "mc-006",
+    "type": "multi_choice",
+    "question": "Which of the following is NOT one of the three primary roles within the Scrum framework as described in the paper?",
+    "options": [
+      "Scrum Master",
+      "Product Owner",
+      "Quality Assurance Engineer",
+      "Development Team"
+    ],
+    "answer": "Quality Assurance Engineer",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "There are three primary roles within the Scrum framework; Scrum Master, servant-leaders responsible for ensuring that the Scrum process is followed properly, Product Owner, person who represents the stakeholders and is responsible for maximizing the value of the product by managing the Product Backlog, and, Development Team"
+    }
+  },
+  {
+    "id": "mc-007",
+    "type": "multi_choice",
+    "question": "Which question is part of the daily standup that each developer answers to GPT?",
+    "options": [
+      "How are you feeling today?",
+      "What will you do before the next meeting?",
+      "What is your blocker?",
+      "What is your sprint velocity?"
+    ],
+    "answer": "What will you do before the next meeting?",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "answers three questions: What did you do since the last scrum meeting? Do you have any obstacles? What will you do before the next meeting?"
+    }
+  },
+  {
+    "id": "mc-008",
+    "type": "multi_choice",
+    "question": "Which obstacle category had the highest total number of reported obstacles?",
+    "options": [
+      "Logical errors",
+      "Compatibility issue",
+      "Need of new/different hardware",
+      "Integration between front-end and back-end"
+    ],
+    "answer": "Logical errors",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "There were 60 reported logical errors to the code and GPT could solve 53"
+    }
+  },
+  {
+    "id": "ow-006",
+    "type": "one_word",
+    "question": "How many logical errors were reported across all groups?",
+    "answer": "60",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "There were 60 reported logical errors to the code and GPT could solve 53"
+    }
+  },
+  {
+    "id": "ow-007",
+    "type": "one_word",
+    "question": "What percentage of the reported obstacles was GPT incapable of solving?",
+    "answer": "47.5%",
+    "answer_location": {
+      "source": "Large Language Models the New Scrum Masters.pdf",
+      "excerpt": "GPT was incapable of solving 47.5% of the obstacles reported."
+    }
+  },
+  {
+    "id": "un-001",
+    "type": "unanswerable",
+    "question": "What is the population of Tokyo?",
+    "answer": null,
+    "answer_location": null
+  },
+  {
+    "id": "un-002",
+    "type": "unanswerable",
+    "question": "When was the Eiffel Tower built?",
+    "answer": null,
+    "answer_location": null
+  },
+  {
+    "id": "un-003",
+    "type": "unanswerable",
+    "question": "What is the boiling point of mercury in degrees Celsius?",
+    "answer": null,
+    "answer_location": null
+  },
+  {
+    "id": "un-004",
+    "type": "unanswerable",
+    "question": "Who won the 2022 FIFA World Cup?",
+    "answer": null,
+    "answer_location": null
+  },
+  {
+    "id": "un-005",
+    "type": "unanswerable",
+    "question": "What is the speed of light in a vacuum?",
+    "answer": null,
+    "answer_location": null
   }
 ]
