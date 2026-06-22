@@ -1,3 +1,4 @@
+import ollama as ollama_client
 from dotenv import load_dotenv
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
@@ -37,3 +38,18 @@ class ApiEmbedder:
     def __call__(self, texts: list[str]) -> list[list[float]]:
         resp = self._client.embeddings.create(model=self.model, input=texts)
         return [d.embedding for d in resp.data]
+
+
+class OllamaEmbedder:
+    def __init__(self, model: str = "nomic-embed-text", host: str = "http://localhost:11434"):
+        self.model = model
+        self._client = ollama_client.Client(host=host)
+        # Probe dimension by embedding a single token
+        probe = self._client.embeddings(model=model, prompt=" ")
+        self.dimension = len(probe["embedding"])
+
+    def __call__(self, texts: list[str]) -> list[list[float]]:
+        return [
+            self._client.embeddings(model=self.model, prompt=text)["embedding"]
+            for text in texts
+        ]
