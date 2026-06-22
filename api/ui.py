@@ -47,7 +47,7 @@ def build_demo() -> gr.Blocks:
 
         clear = gr.Button("Clear History", variant="secondary")
 
-        with gr.Accordion("RAGAS Evaluation Scores", open=False):
+        with gr.Accordion("RAGAS Evaluation Scores", open=True):
             gr.Markdown(
                 "Real-time quality scores computed after each response. "
                 "Powered by GPT-4o as judge."
