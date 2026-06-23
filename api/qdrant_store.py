@@ -19,7 +19,7 @@ class QdrantStore:
     def __post_init__(self):
         if self._client is None:
             if self.path:
-                self._client = QdrantClient(self.path)
+                self._client = QdrantClient(path=self.path)
             else:
                 self._client = QdrantClient(host=self.host, port=self.port)
 

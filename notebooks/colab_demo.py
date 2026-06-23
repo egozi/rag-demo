@@ -85,10 +85,63 @@ print(f"Files in data/raw: {[f.name for f in files]}")
 # ## Step 4 — Index documents
 #
 # Downloads the embedding model on first run (~80 MB, cached afterwards).
-# Re-run with `--force` if you add new documents.
+# Re-run this cell if you add new documents.
 
 # %%
-os.system("python scripts/index_documents.py --input data/raw --force")
+import pathlib
+from api.config import get_settings
+from api.embed import get_embedder
+from api.qdrant_store import QdrantStore
+from chunker.chunk import chunk_docs
+from document_processing.extract import extract_docs
+from embedder.embed import Embedding
+
+settings = get_settings()
+input_dir  = pathlib.Path("data/raw")
+md_dir     = pathlib.Path("data/markdown")
+chunks_dir = pathlib.Path("data/chunks")
+for d in (md_dir, chunks_dir):
+    d.mkdir(parents=True, exist_ok=True)
+
+print("Extracting …")
+docs = extract_docs(input_dir, md_dir)
+print(f"  {len(docs)} document(s)")
+
+print("Chunking …")
+chunks = chunk_docs(md_dir, chunks_dir)
+print(f"  {len(chunks)} chunk(s)")
+
+print("Loading embedder …")
+embedder = get_embedder()
+print(f"  {type(embedder).__name__} ({embedder.model})")
+
+store = QdrantStore(
+    host=settings.qdrant_host,
+    port=settings.qdrant_port,
+    collection=settings.qdrant_collection,
+    path=settings.qdrant_path,   # "./data/qdrant_local" — embedded, no Docker needed
+)
+
+# Drop and recreate collection so re-runs are idempotent
+try:
+    store._client.delete_collection(settings.qdrant_collection)
+except Exception:
+    pass
+store.create_collection(dim=embedder.dimension)
+
+batch_size = 64
+for i in range(0, len(chunks), batch_size):
+    batch = chunks[i : i + batch_size]
+    vectors = embedder([c.text for c in batch])
+    embeddings = [
+        Embedding(chunk_id=c.id, source=c.source, text=c.text,
+                  vector=v, model=embedder.model, dim=embedder.dimension)
+        for c, v in zip(batch, vectors)
+    ]
+    store.upsert(embeddings)
+    print(f"  {min(i + batch_size, len(chunks))}/{len(chunks)}", end="\r")
+
+print(f"\nDone — {len(chunks)} chunks from {len(docs)} document(s) indexed.")
 
 # %% [markdown]
 # ## Step 5 — Launch the chat UI
