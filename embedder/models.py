@@ -1,3 +1,4 @@
+import torch
 import ollama as ollama_client
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -18,7 +19,8 @@ OPENAI_MODEL_DIMS = {
 class LocalEmbedder:
     def __init__(self, model: str = DEFAULT_LOCAL_MODEL):
         self.model = model
-        self._st = SentenceTransformer(model)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._st = SentenceTransformer(model, device=device)
         self.dimension = self._st.get_sentence_embedding_dimension()
 
     def __call__(self, texts: list[str]) -> list[list[float]]:

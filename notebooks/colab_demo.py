@@ -143,6 +143,9 @@ for i in range(0, len(chunks), batch_size):
 
 print(f"\nDone — {len(chunks)} chunks from {len(docs)} document(s) indexed.")
 
+# Release the file lock so Step 5 can open the same path
+store._client.close()
+
 # %% [markdown]
 # ## Step 5 — Launch the chat UI
 #

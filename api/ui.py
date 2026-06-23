@@ -7,16 +7,13 @@ from api.agent import ConversationalRAGAgent
 _agent = ConversationalRAGAgent()
 
 
-def _ask(question: str, history: list[dict], session_id: str):
+def _ask(question: str, history: list[list], session_id: str):
     if not question.strip():
         return history, [], session_id
 
     answer, chunks = _agent.ask(session_id, question)
 
-    history = history + [
-        {"role": "user", "content": question},
-        {"role": "assistant", "content": answer},
-    ]
+    history = history + [[question, answer]]
     sources = [
         [c.chunk_id, c.source, round(c.score, 3), c.text[:200]]
         for c in chunks
