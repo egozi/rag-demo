@@ -9,7 +9,10 @@ def get_embedder() -> ApiEmbedder | OllamaEmbedder | LocalEmbedder:
             model=settings.openai_embed_model,
             api_key=settings.openai_api_key,
         )
-    return OllamaEmbedder(
-        model=settings.ollama_embed_model,
-        host=settings.ollama_host,
-    )
+    elif settings.llm_backend == "huggingface":
+        return LocalEmbedder(model=settings.hf_embed_model)
+    else:
+        return OllamaEmbedder(
+            model=settings.ollama_embed_model,
+            host=settings.ollama_host,
+        )

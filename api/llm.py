@@ -14,6 +14,15 @@ class LLMClient:
         if self._settings.llm_backend == "openai":
             self._openai = OpenAI(api_key=self._settings.openai_api_key)
             self._model = self._settings.openai_model
+        elif self._settings.llm_backend == "huggingface":
+            from transformers import pipeline
+            self._pipe = pipeline(
+                "text-generation",
+                model=self._settings.hf_llm_model,
+                device_map="auto",
+                torch_dtype="auto",
+            )
+            self._model = self._settings.hf_llm_model
         else:
             self._ollama = ollama_client.Client(host=self._settings.ollama_host)
             self._model = self._settings.ollama_model
@@ -32,6 +41,10 @@ class LLMClient:
                 "input": resp.usage.prompt_tokens,
                 "output": resp.usage.completion_tokens,
             }
+        elif self._settings.llm_backend == "huggingface":
+            result = self._pipe(messages, max_new_tokens=512, do_sample=False)
+            text = result[0]["generated_text"][-1]["content"]
+            usage = {"input": 0, "output": 0}
         else:
             resp = self._ollama.chat(
                 model=self._model,

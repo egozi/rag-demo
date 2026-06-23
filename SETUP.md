@@ -12,12 +12,17 @@ The final demo runs five services:
 | `langfuse` | 3000 | Observability dashboard |
 | `langfuse-db` | — | Postgres backend for Langfuse (internal) |
 
-Two modes are supported:
+Three backends are supported — change `llm_backend` in `api/config.py` to switch:
 
-- **`LLM_BACKEND=openai`** — OpenAI for LLM + embeddings; easiest for local testing
-- **`LLM_BACKEND=ollama`** — Ollama on a GPU VM; used in GCP deployment
+| Backend | `llm_backend` | LLM | Embedder | GPU needed? | Use case |
+|---|---|---|---|---|---|
+| **OpenAI** (default) | `"openai"` | `gpt-4o-mini` | `text-embedding-3-small` | No | Local dev / testing |
+| **Ollama** | `"ollama"` | `llama3.2:3b` | `nomic-embed-text` | Optional | AWS/self-hosted GPU VM |
+| **HuggingFace** | `"huggingface"` | `Phi-3-mini-4k-instruct` | `all-MiniLM-L6-v2` | Recommended | Colab / no Ollama install |
 
-RAGAS evaluation always uses OpenAI (`gpt-4o`) as judge, in both modes.
+> **After switching backends, always re-index your documents** (`python scripts/index_documents.py --force`) — embedding dimensions differ between backends.
+
+RAGAS evaluation always uses OpenAI (`gpt-4o`) as judge, regardless of backend.
 
 ---
 

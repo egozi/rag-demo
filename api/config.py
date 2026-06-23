@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     langfuse_secret_key: str = ""
 
     # ── Mode ──────────────────────────────────────────────────────────────────
-    llm_backend: str = "openai"    # "openai" | "ollama"
+    llm_backend: str = "openai"    # "openai" | "ollama" | "huggingface"
 
     # ── OpenAI ────────────────────────────────────────────────────────────────
     openai_model: str = "gpt-4o-mini"
@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     # ── Langfuse ──────────────────────────────────────────────────────────────
     langfuse_host: str = "http://localhost:3000"  # Docker: http://langfuse:3000
     langfuse_enabled: bool = True
+
+    # ── HuggingFace (only when llm_backend=huggingface) ──────────────────────
+    hf_llm_model: str = "microsoft/Phi-3-mini-4k-instruct"
+    hf_embed_model: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # ── Qdrant ────────────────────────────────────────────────────────────────
     qdrant_host: str = "localhost"        # Docker: qdrant
