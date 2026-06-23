@@ -7,7 +7,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s | %(message)s",
     datefmt="%H:%M:%S",
 )
-from fastapi.responses import JSONResponse
+from fastapi import HTTPException
 from pydantic import BaseModel
 
 from api.agent import ConversationalRAGAgent
@@ -31,7 +31,6 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     chunks: list[dict]
-    ragas_scores: dict[str, float]
 
 
 @app.get("/api/health")
@@ -41,7 +40,7 @@ def health():
 
 @app.post("/api/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
-    answer, chunks, scores = _agent.ask(req.session_id, req.question, top_k=req.top_k)
+    answer, chunks = _agent.ask(req.session_id, req.question, top_k=req.top_k)
     return ChatResponse(
         answer=answer,
         chunks=[
@@ -53,8 +52,20 @@ def chat(req: ChatRequest):
             }
             for c in chunks
         ],
-        ragas_scores=scores,
     )
+
+
+@app.post("/api/sessions/{session_id}/evaluate")
+def evaluate_last(session_id: str):
+    """Run RAGAS evaluation on the most recent answer for this session.
+
+    HTTP example:
+        curl -X POST http://localhost:8000/api/sessions/SESSION_ID/evaluate
+    """
+    scores = _agent.evaluate_last(session_id)
+    if not scores:
+        raise HTTPException(status_code=404, detail="No answer to evaluate for this session — ask a question first.")
+    return {"session_id": session_id, "ragas_scores": scores}
 
 
 @app.get("/api/sessions/{session_id}/history")

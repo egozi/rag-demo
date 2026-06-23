@@ -41,9 +41,11 @@ class Settings(BaseSettings):
     langfuse_enabled: bool = True
 
     # ── Qdrant ────────────────────────────────────────────────────────────────
-    qdrant_host: str = "localhost"  # Docker: qdrant
+    qdrant_host: str = "localhost"        # Docker: qdrant
     qdrant_port: int = 6333
     qdrant_collection: str = "rag_demo"
+    qdrant_path: str = ""                 # Colab/local: set to a dir path (e.g. "./data/qdrant_local")
+                                          # to use embedded Qdrant instead of a server
 
     # ── Conversation history ──────────────────────────────────────────────────
     history_db: str = "data/history.db"

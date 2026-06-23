@@ -56,6 +56,7 @@ def main() -> None:
         host=settings.qdrant_host,
         port=settings.qdrant_port,
         collection=settings.qdrant_collection,
+        path=settings.qdrant_path,
     )
 
     if args.force:

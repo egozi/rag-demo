@@ -8,7 +8,7 @@ The final demo runs five services:
 |---------|------|------|
 | `app` | 8000 | FastAPI + Gradio chat UI |
 | `qdrant` | 6333 | Vector store |
-| `ollama` | 11434 | Local LLM + embeddings (GCP only) |
+| `ollama` | 11434 | Local LLM + embeddings (AWS GPU VM only) |
 | `langfuse` | 3000 | Observability dashboard |
 | `langfuse-db` | — | Postgres backend for Langfuse (internal) |
 
@@ -126,89 +126,166 @@ Everything else is the same as Option A (steps 4–6).
 
 ---
 
-## Option C — GCP Deployment (GPU VM + local models)
+## Option C — AWS Deployment (GPU VM + local models)
 
-### 1. Create the VM
+Recommended instance: **`g4dn.xlarge`** — 1× T4 GPU (16 GB VRAM), 4 vCPUs, 16 GB RAM.
 
-```bash
-gcloud compute instances create rag-demo \
-  --machine-type=n1-standard-4 \
-  --accelerator=type=nvidia-tesla-t4,count=1 \
-  --image-family=ubuntu-2204-lts \
-  --image-project=ubuntu-os-cloud \
-  --boot-disk-size=50GB \
-  --tags=http-server \
-  --maintenance-policy=TERMINATE
-```
+Access is via **SSH tunnel** — no public ports needed beyond SSH (port 22), which the default security group already allows.
 
-### 2. Open firewall ports
+### 1. Prerequisites
+
+- AWS CLI configured (`aws configure`)
+
+### 2. Create an EC2 key pair
 
 ```bash
-gcloud compute firewall-rules create allow-rag-demo \
-  --allow tcp:8000,tcp:3000 \
-  --target-tags=http-server \
-  --description="RAG demo app and Langfuse"
+aws ec2 create-key-pair \
+  --key-name my-key-pair \
+  --query "KeyMaterial" \
+  --output text > ~/.ssh/my-key-pair.pem
+
+chmod 400 ~/.ssh/my-key-pair.pem
 ```
 
-### 3. SSH in and install dependencies
+### 3. Get the latest Ubuntu 22.04 AMI ID
 
 ```bash
-gcloud compute ssh rag-demo
-sudo bash setup/gcp_startup.sh
+aws ec2 describe-images \
+  --owners 099720109477 \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" \
+  --query "sort_by(Images, &CreationDate)[-1].ImageId" \
+  --output text
 ```
 
-The script installs: NVIDIA driver 535, Docker, nvidia-container-toolkit. It prints next steps when complete.
+### 4. Launch the instance
 
-> **Note:** If you attached `gcp_startup.sh` as a startup script via `--metadata-from-file`, this runs automatically on first boot.
+```bash
+aws ec2 run-instances \
+  --image-id <AMI_ID_FROM_STEP_3> \
+  --instance-type g4dn.xlarge \
+  --key-name my-key-pair \
+  --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":50}}]' \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=rag-demo}]' \
+  --count 1
+```
 
-### 4. Clone and configure
+Get the public IP once running:
+
+```bash
+aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=rag-demo" "Name=instance-state-name,Values=running" \
+  --query "Reservations[0].Instances[0].PublicIpAddress" \
+  --output text
+```
+
+### 5. SSH in and install dependencies
+
+```bash
+ssh -i ~/.ssh/my-key-pair.pem ubuntu@<PUBLIC_IP>
+```
+
+Then run:
+
+```bash
+# Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+newgrp docker
+
+# NVIDIA driver
+sudo apt-get update && sudo apt-get install -y nvidia-driver-535
+sudo reboot
+# SSH back in after reboot, then:
+
+# nvidia-container-toolkit
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+  | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+  | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+  | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+
+# Verify GPU
+nvidia-smi
+```
+
+### 6. Clone and configure
 
 ```bash
 git clone <your-repo> && cd rag-demo
 cp .env.example .env
-nano .env   # set OPENAI_API_KEY and leave LLM_BACKEND=ollama
+nano .env   # set OPENAI_API_KEY (for RAGAS judge)
 ```
 
-Set these in `.env` before starting:
-
-```bash
-LLM_BACKEND=ollama
-OPENAI_API_KEY=sk-...   # for RAGAS judge
+Switch to Ollama mode in `api/config.py`:
+```python
+llm_backend: str = "ollama"
 ```
 
-### 5. Start all services
+### 7. Start all services
 
 ```bash
 docker compose up -d
 ```
 
-### 6. Pull Ollama models (inside the container)
+### 8. Pull Ollama models
 
 ```bash
-bash scripts/pull_models.sh --docker
+docker compose exec ollama ollama pull llama3.2:3b
+docker compose exec ollama ollama pull nomic-embed-text
 ```
 
-### 7. Configure Langfuse (one-time)
+### 9. Configure Langfuse (one-time)
 
-1. Open `http://EXTERNAL_IP:3000` (get IP: `gcloud compute instances list`)
-2. Register, create a project, copy API keys into `.env`
-3. Restart the app container to pick up the keys:
-   ```bash
-   docker compose restart app
-   ```
-
-### 8. Index documents
-
-Upload your PDFs to `data/raw/` (e.g. via `gcloud compute scp`), then:
+Open an SSH tunnel from your **local machine**:
 
 ```bash
+ssh -i ~/.ssh/my-key-pair.pem -L 3000:localhost:3000 ubuntu@<PUBLIC_IP>
+```
+
+Then open [http://localhost:3000](http://localhost:3000), register, create a project, and copy the API keys into `.env` on the server. Restart the app to pick them up:
+
+```bash
+docker compose restart app
+```
+
+### 10. Upload documents and index
+
+```bash
+# Copy PDFs from your local machine
+scp -i ~/.ssh/my-key-pair.pem my-docs/*.pdf ubuntu@<PUBLIC_IP>:~/rag-demo/data/raw/
+
+# Index on the server
 docker compose exec app python scripts/index_documents.py --input data/raw/
 ```
 
-### 9. Access
+### 11. Access the app
 
-- **App:** `http://EXTERNAL_IP:8000`
-- **Langfuse:** `http://EXTERNAL_IP:3000`
+Open an SSH tunnel that forwards both the app and Langfuse:
+
+```bash
+ssh -i ~/.ssh/my-key-pair.pem -L 8000:localhost:8000 -L 3000:localhost:3000 ubuntu@<PUBLIC_IP>
+```
+
+Then open in your browser:
+- **App:** [http://localhost:8000](http://localhost:8000)
+- **Langfuse:** [http://localhost:3000](http://localhost:3000)
+
+### Stopping the instance (to save cost)
+
+```bash
+# Get instance ID
+aws ec2 describe-instances --filters "Name=tag:Name,Values=rag-demo" \
+  --query "Reservations[0].Instances[0].InstanceId" --output text
+
+# Stop (keeps disk, no compute charge)
+aws ec2 stop-instances --instance-ids <INSTANCE_ID>
+
+# Start again later
+aws ec2 start-instances --instance-ids <INSTANCE_ID>
+```
 
 ---
 

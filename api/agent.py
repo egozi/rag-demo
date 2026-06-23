@@ -34,14 +34,17 @@ class ConversationalRAGAgent:
             host=settings.qdrant_host,
             port=settings.qdrant_port,
             collection=settings.qdrant_collection,
+            path=settings.qdrant_path,
         )
         self._history = history or ConversationHistory(db_path=settings.history_db)
         self._llm = llm or LLMClient()
         self._embedder = embedder or get_embedder()
+        # last turn per session — used by evaluate_last()
+        self._last: dict[str, tuple[str, str, list[str]]] = {}
 
     def ask(
         self, session_id: str, question: str, top_k: int = 5
-    ) -> tuple[str, list[RetrievalResult], dict[str, float]]:
+    ) -> tuple[str, list[RetrievalResult]]:
         tracer = get_tracer()
         trace = tracer.start_trace(session_id=session_id, input=question)
 
@@ -82,14 +85,25 @@ class ConversationalRAGAgent:
         self._history.add_turn(session_id, question, answer_text)
         self._history.maybe_summarize(session_id, self._llm)
 
-        # Step 6: RAGAS real-time evaluation
+        # Store last turn so evaluate_last() can score it on demand
+        self._last[session_id] = (question, answer_text, [c.text for c in chunks])
+
+        tracer.flush()
+        return answer_text, chunks
+
+    def evaluate_last(self, session_id: str) -> dict[str, float]:
+        """Run RAGAS evaluation on the most recent answer for this session."""
+        if session_id not in self._last:
+            return {}
+        question, answer, contexts = self._last[session_id]
+        tracer = get_tracer()
+        trace = tracer.start_trace(session_id=session_id, input=f"[eval] {question}")
         scores: dict[str, float] = {}
         try:
-            scores = evaluate_response(question, answer_text, [c.text for c in chunks])
+            scores = evaluate_response(question, answer, contexts)
             for metric, value in scores.items():
                 trace.log_score(name=metric, value=value)
         except Exception:
             pass
-
         tracer.flush()
-        return answer_text, chunks, scores
+        return scores

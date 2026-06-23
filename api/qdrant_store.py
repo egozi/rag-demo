@@ -12,11 +12,16 @@ class QdrantStore:
     host: str = "localhost"
     port: int = 6333
     collection: str = "rag_demo"
+    path: str = ""          # if set, use embedded Qdrant (no server needed)
+                            # e.g. "./data/qdrant_local" for Colab/local file mode
     _client: QdrantClient | None = None
 
     def __post_init__(self):
         if self._client is None:
-            self._client = QdrantClient(host=self.host, port=self.port)
+            if self.path:
+                self._client = QdrantClient(self.path)
+            else:
+                self._client = QdrantClient(host=self.host, port=self.port)
 
     @classmethod
     def from_client(cls, client: QdrantClient, collection: str = "rag_demo") -> "QdrantStore":
@@ -25,6 +30,7 @@ class QdrantStore:
         store.collection = collection
         store.host = ""
         store.port = 0
+        store.path = ""
         return store
 
     def create_collection(self, dim: int, distance: Distance = Distance.COSINE) -> None:

@@ -6,10 +6,10 @@ Usage:
     python scripts/chat.py --url http://HOST:8000  # connect to remote server
 
 Commands during chat:
+    /eval     — run RAGAS evaluation on the last answer (~10-15s)
     /clear    — clear conversation history for this session
     /history  — show conversation history stored on the server
     /sources  — toggle display of retrieved source chunks
-    /scores   — toggle display of RAGAS evaluation scores
     /quit     — exit
 
 ─────────────────────────────────────────────────────────────────────────────
@@ -20,10 +20,14 @@ HTTP client. Replace SESSION_ID with any unique string (e.g. "alice-session-1").
 # Check server health
 #   curl http://localhost:8000/api/health
 
-# Ask a question (POST /api/chat)
+# Ask a question (returns answer + retrieved chunks immediately)
 #   curl -s http://localhost:8000/api/chat \\
 #        -H "Content-Type: application/json" \\
 #        -d '{"session_id": "SESSION_ID", "question": "What is RAG?", "top_k": 5}' \\
+#        | python -m json.tool
+
+# Evaluate the last answer with RAGAS (run separately, takes ~10-15s)
+#   curl -s -X POST http://localhost:8000/api/sessions/SESSION_ID/evaluate \\
 #        | python -m json.tool
 
 # View conversation history for a session
@@ -38,7 +42,6 @@ HTTP client. Replace SESSION_ID with any unique string (e.g. "alice-session-1").
 """
 
 import argparse
-import json
 import sys
 import uuid
 
@@ -47,6 +50,7 @@ import requests
 
 def print_scores(scores: dict) -> None:
     if not scores:
+        print("  (no scores returned)")
         return
     print("\n  RAGAS scores:")
     labels = {
@@ -73,10 +77,10 @@ def print_sources(chunks: list[dict]) -> None:
         print(f"        {preview}…")
 
 
-def chat_loop(base_url: str, session_id: str, show_sources: bool, show_scores: bool) -> None:
+def chat_loop(base_url: str, session_id: str, show_sources: bool) -> None:
     print(f"RAG Demo CLI  —  session {session_id}")
     print(f"Server: {base_url}")
-    print("Commands: /clear  /history  /sources  /scores  /quit")
+    print("Commands: /eval  /clear  /history  /sources  /quit")
     print("─" * 60)
 
     while True:
@@ -92,6 +96,21 @@ def chat_loop(base_url: str, session_id: str, show_sources: bool, show_scores: b
         if question == "/quit":
             print("Bye.")
             break
+
+        if question == "/eval":
+            print("  Running RAGAS evaluation…")
+            try:
+                r = requests.post(
+                    f"{base_url}/api/sessions/{session_id}/evaluate", timeout=120
+                )
+                if r.status_code == 404:
+                    print("  Ask a question first before evaluating.")
+                else:
+                    r.raise_for_status()
+                    print_scores(r.json().get("ragas_scores", {}))
+            except requests.exceptions.RequestException as e:
+                print(f"  ERROR: {e}")
+            continue
 
         if question == "/clear":
             r = requests.delete(f"{base_url}/api/sessions/{session_id}/clear", timeout=10)
@@ -111,11 +130,6 @@ def chat_loop(base_url: str, session_id: str, show_sources: bool, show_scores: b
             print(f"  Sources display: {'on' if show_sources else 'off'}")
             continue
 
-        if question == "/scores":
-            show_scores = not show_scores
-            print(f"  RAGAS scores display: {'on' if show_scores else 'off'}")
-            continue
-
         payload = {"session_id": session_id, "question": question, "top_k": 5}
         try:
             r = requests.post(f"{base_url}/api/chat", json=payload, timeout=120)
@@ -129,9 +143,7 @@ def chat_loop(base_url: str, session_id: str, show_sources: bool, show_scores: b
 
         data = r.json()
         print(f"\nAssistant: {data['answer']}")
-
-        if show_scores:
-            print_scores(data.get("ragas_scores", {}))
+        print("  (type /eval to score this answer with RAGAS)")
 
         if show_sources:
             print_sources(data.get("chunks", []))
@@ -141,7 +153,6 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="RAG Demo CLI chat client")
     parser.add_argument("--url", default="http://localhost:8000", help="API base URL")
     parser.add_argument("--session", default=None, help="Session ID (auto-generated if omitted)")
-    parser.add_argument("--no-scores", action="store_true", help="Hide RAGAS scores")
     parser.add_argument("--no-sources", action="store_true", help="Hide retrieved sources")
     args = parser.parse_args()
 
@@ -161,7 +172,6 @@ def main() -> None:
         base_url=args.url,
         session_id=session_id,
         show_sources=not args.no_sources,
-        show_scores=not args.no_scores,
     )
 
 
